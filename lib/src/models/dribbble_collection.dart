@@ -16,6 +16,24 @@ class DribbbleCollection<T> {
 
     return new DribbbleCollection(collection, links.nextLink, links.prevLink);
   }
+
+  @override
+  String toString() {
+    return 'DribbbleCollection{collection: $collection, nextLink: $nextLink, prevLink: $prevLink}';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DribbbleCollection &&
+          runtimeType == other.runtimeType &&
+          collection == other.collection &&
+          nextLink == other.nextLink &&
+          prevLink == other.prevLink;
+
+  @override
+  int get hashCode =>
+      collection.hashCode ^ nextLink.hashCode ^ prevLink.hashCode;
 }
 
 /// A utility class for parsing the next and prev links from Dribbble's HTTP
