@@ -1,3 +1,5 @@
+import 'package:dribbble_client/src/models/dribbble_scope.dart';
+
 class DribbbleEndpoints {
   static final defaultBaseUri = new Uri(
     scheme: 'https',
@@ -57,4 +59,32 @@ class DribbbleEndpoints {
         "page": page.toString(),
         "per_page": pageSize.toString(),
       });
+
+  Uri accessToken(
+    String clientId,
+    String clientSecret,
+    String tempCode, {
+    String redirectUri,
+    List<DribbbleScope> scopes = const [DribbbleScope.public],
+  }) {
+    final params = new Map.from({
+      'client_id': clientId,
+      'client_secret': clientSecret,
+      'code': tempCode,
+      'scope': scopes
+          .map((scope) => scope.toString().replaceAll('DribbbleScope.', ''))
+          .join('+')
+    });
+
+    if (redirectUri != null) {
+      params.putIfAbsent('redirect_uri', () => redirectUri);
+    }
+
+    return new Uri(
+      scheme: 'https',
+      host: 'dribbble.com',
+      path: 'oauth/token',
+      queryParameters: params,
+    );
+  }
 }

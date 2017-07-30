@@ -47,24 +47,15 @@ class DribbbleHeaderLinks {
   factory DribbbleHeaderLinks.parse(String linkHeader) {
     final links = (linkHeader ?? '').split(',');
 
-    final nextLink = links
-        .firstWhere(
-          (link) => link.contains('rel="next"'),
-          orElse: () => "",
-        )
-        .replaceAll('<', '')
-        .replaceAll('>; rel="next"', '')
-        .trim();
-
-    final prevLink = links
-        .firstWhere(
-          (link) => link.contains('rel="prev"'),
-          orElse: () => "",
-        )
-        .replaceAll('<', '')
-        .replaceAll('>; rel="prev"', '')
-        .trim();
-
-    return new DribbbleHeaderLinks(nextLink, prevLink);
+    return new DribbbleHeaderLinks(
+        _extractLink(links, "next"), _extractLink(links, "prev"));
   }
+
+  static String _extractLink(List<String> links, String type) => links
+      .firstWhere(
+        (link) => link.contains('rel="$type"'),
+        orElse: () => "",
+      )
+      .replaceAll(new RegExp('<|>; rel="$type"'), '')
+      .trim();
 }

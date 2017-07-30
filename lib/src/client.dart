@@ -1,29 +1,37 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:dribbble_client/src/endpoints.dart';
 import 'package:dribbble_client/src/models/dribbble_collection.dart';
+import 'package:dribbble_client/src/models/dribbble_scope.dart';
 import 'package:dribbble_client/src/models/dribbble_shot.dart';
+import 'package:dribbble_client/src/models/dribbble_token.dart';
 import 'package:dribbble_client/src/models/dribbble_user.dart';
 import 'package:http/http.dart';
 
 class DribbbleClient {
-  final String accessToken;
   final Client client;
   final JsonDecoder jsonDecoder;
-  final Utf8Decoder utf8Decoder;
   final DribbbleEndpoints endpoints;
+  final String clientId;
+  final String clientSecret;
+  final String appAccessToken;
+  String userAccessToken;
+  String get accessToken => "Bearer ${userAccessToken ?? appAccessToken}";
 
   DribbbleClient(
-    this.accessToken, {
+    this.appAccessToken,
+    this.clientId,
+    this.clientSecret, {
+    String userAccessToken,
     Client client,
     JsonDecoder jsonDecoder,
-    Utf8Decoder utf8Decoder,
     DribbbleEndpoints endpoints,
   })
       : this.client = client ?? new Client(),
         this.jsonDecoder = jsonDecoder ?? new JsonDecoder(),
-        this.utf8Decoder = utf8Decoder ?? new Utf8Decoder(),
-        this.endpoints = endpoints ?? new DribbbleEndpoints();
+        this.endpoints = endpoints ?? new DribbbleEndpoints(),
+        this.userAccessToken = userAccessToken;
 
   // Shots
   Future<DribbbleShot> fetchShot(int id) async {
@@ -64,20 +72,54 @@ class DribbbleClient {
     return new DribbbleUser.fromJson(json);
   }
 
+  /// Login using the OAuth2 temporary code from the OAuth2 flow, then store
+  /// the access token so it can be used as part of the subsequent requests.
+  ///
+  /// As a dev, you can also persist the returned token securely. When your
+  /// app starts up again, load the token from your secure persistence layer
+  /// and initialize this client with it to continue as the logged in user.
+  Future<DribbbleToken> login(
+    String tempCode, {
+    String redirectUri,
+    String scope: 'public',
+  }) async {
+    final token = await fetchToken(tempCode);
+
+    userAccessToken = token.accessToken;
+
+    return token;
+  }
+
+  /// Fetch the OAuth2 token, but do not automatically store it as the
+  /// userAccessToken
+  Future<DribbbleToken> fetchToken(
+    String tempCode, {
+    String redirectUri,
+    List<DribbbleScope> scopes = const [DribbbleScope.public],
+  }) async {
+    final json = await _fetch(endpoints.accessToken(
+      clientId,
+      clientSecret,
+      tempCode,
+      redirectUri: redirectUri,
+      scopes: scopes,
+    ));
+
+    return new DribbbleToken.fromJson(json);
+  }
+
   Future<DribbbleCollection<DribbbleShot>> fetchUserShots(int userId,
           {int page = 0, int pageSize = 30}) =>
       _fetchShots(endpoints.userShots(userId, page, pageSize));
 
   Future<dynamic> _fetch(Uri uri) async {
-    final finalUri = _appendAccessToken(uri);
-    final response = await client.get(finalUri);
+    final response = await _getWithAuthorization(uri);
 
     return jsonDecoder.convert(response.body);
   }
 
   Future<DribbbleCollection<DribbbleShot>> _fetchShots(Uri uri) async {
-    final finalUri = _appendAccessToken(uri);
-    final response = await client.get(finalUri);
+    final response = await _getWithAuthorization(uri);
     final json = jsonDecoder.convert(response.body);
 
     return DribbbleCollection.fromHeader<DribbbleShot>(
@@ -87,8 +129,7 @@ class DribbbleClient {
   }
 
   Future<DribbbleCollection<DribbbleUser>> _fetchUsers(Uri uri) async {
-    final finalUri = _appendAccessToken(uri);
-    final response = await client.get(finalUri);
+    final response = await _getWithAuthorization(uri);
     final json = jsonDecoder.convert(response.body);
 
     return DribbbleCollection.fromHeader<DribbbleUser>(
@@ -97,10 +138,7 @@ class DribbbleClient {
     );
   }
 
-  Uri _appendAccessToken(Uri uri) {
-    final queryParams = new Map.from(uri.queryParameters)
-      ..putIfAbsent('access_token', () => accessToken);
-
-    return uri.replace(queryParameters: queryParams);
+  Future<Response> _getWithAuthorization(Uri uri) {
+    return client.get(uri, headers: {HttpHeaders.AUTHORIZATION: accessToken});
   }
 }

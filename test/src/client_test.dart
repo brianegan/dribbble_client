@@ -7,6 +7,10 @@ import 'package:dribbble_client/dribbble_client.dart';
 
 void main() {
   group('Dribbble Api', () {
+    final testToken = "TEST_TOKEN";
+    final testId = "TEST_ID";
+    final testSecret = "TEST_SECRET";
+
     MockClient httpClient;
     DribbbleClient dribbbleClient;
     DribbbleEndpoints endpoints =
@@ -15,7 +19,9 @@ void main() {
     setUp(() {
       httpClient = new MockClient();
       dribbbleClient = new DribbbleClient(
-        "TEST_TOKEN",
+        testToken,
+        testId,
+        testSecret,
         client: httpClient,
       );
     });
@@ -209,6 +215,33 @@ void main() {
       final user = await dribbbleClient.fetchUser(userId);
       expect(user, new isInstanceOf<DribbbleUser>());
       expect(user.id, 1);
+    });
+
+    test('fetches an api token', () async {
+      final tempCode = '123456';
+      final endpoint = endpoints.accessToken(testId, testSecret, tempCode);
+
+      mockEndpoint(endpoint.path, endpoint.path);
+
+      final token = await dribbbleClient.fetchToken(tempCode);
+      expect(token, new isInstanceOf<DribbbleToken>());
+    });
+
+    test('logging in saves the user access token', () async {
+      final tempCode = '123456';
+      final endpoint = endpoints.accessToken(testId, testSecret, tempCode);
+
+      mockEndpoint(endpoint.path, endpoint.path);
+
+      expect(dribbbleClient.accessToken, "Bearer $testToken");
+      expect(
+        await dribbbleClient.login(tempCode),
+        new isInstanceOf<DribbbleToken>(),
+      );
+      expect(
+        dribbbleClient.accessToken,
+        "Bearer USER_TOKEN",
+      );
     });
   });
 }

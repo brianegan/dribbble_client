@@ -3,8 +3,6 @@ import 'package:dribbble_client/dribbble_client.dart';
 
 void main() {
   group('Link Headers', () {
-    test('can be parse next links', () {});
-
     test('can be parse next & prev links', () {
       final nextPrev =
           '<https://api.dribbble.com/v1/shots?access_token=bc94df476c7d5a1dc0744210d8edf6572c7d70e0d3efa9e79915f8f6dd9de35e&page=3>; rel="next", <https://api.dribbble.com/v1/shots?access_token=bc94df476c7d5a1dc0744210d8edf6572c7d70e0d3efa9e79915f8f6dd9de35e&page=1>; rel="prev"';
