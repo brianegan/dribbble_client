@@ -1,4 +1,4 @@
-library dribbble_api;
+library dribbble_client;
 
 export 'src/client.dart';
 export 'src/endpoints.dart';

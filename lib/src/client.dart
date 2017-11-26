@@ -17,7 +17,6 @@ class DribbbleClient {
   final String clientSecret;
   final String appAccessToken;
   String userAccessToken;
-  String get accessToken => "Bearer ${userAccessToken ?? appAccessToken}";
 
   DribbbleClient(
     this.appAccessToken,
@@ -32,6 +31,8 @@ class DribbbleClient {
         this.jsonDecoder = jsonDecoder ?? new JsonDecoder(),
         this.endpoints = endpoints ?? new DribbbleEndpoints(),
         this.userAccessToken = userAccessToken;
+
+  String get accessToken => "Bearer ${userAccessToken ?? appAccessToken}";
 
   // Shots
   Future<DribbbleShot> fetchShot(int id) async {

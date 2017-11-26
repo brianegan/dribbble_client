@@ -1,6 +1,6 @@
-# dribbble_api
+# dribbble_client
 
-[![build status](https://gitlab.com/brianegan/dribbble_client/badges/master/build.svg)](https://gitlab.com/brianegan/dribbble_client/commits/master)  [![coverage report](https://gitlab.com/brianegan/dribbble_client/badges/master/coverage.svg)](https://brianegan.gitlab.io/dribbble_client/coverage/)
+[![Build Status](https://travis-ci.org/brianegan/dribbble_client.svg?branch=master)](https://travis-ci.org/brianegan/dribbble_client) [![codecov](https://codecov.io/gh/brianegan/dribbble_client/branch/master/graph/badge.svg)](https://codecov.io/gh/brianegan/dribbble_client)
 
 A library for interacting with the [Dribbble Api](http://developer.dribbble.com/v1/).
 
@@ -14,4 +14,4 @@ A library for interacting with the [Dribbble Api](http://developer.dribbble.com/
 
 ## Features and bugs
 
-Please file feature requests and bugs at the [issue tracker](https://gitlab.com/brianegan/dribbble_client/issues).
+Please file feature requests and bugs at the [issue tracker](https://github.com/brianegan/dribbble_client/issues).
